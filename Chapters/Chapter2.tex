@@ -1,0 +1,147 @@
+% Chapter Template
+
+\chapter{Background} % Main chapter title
+
+\label{Chapter2} % Change X to a consecutive number; for referencing this chapter elsewhere, use \ref{ChapterX}
+
+%----------------------------------------------------------------------------------------
+%	SECTION 1
+%----------------------------------------------------------------------------------------
+
+Before digging into the project itself, we need to understand the problem area. 
+
+\section{Project EPIC}
+
+EPIC (Empowering the Public with Information in Crisis) is a project at the University of Colorado Boulder. Its focused in crisis informatics, an area of study that examines how people use different technologies to interact during emergencies and their impact on emergency response. 
+ 
+Project EPIC has a long history on software engineering. Since 2009, this project has done research on large data storage and analysis. When large amounts of data are being collected, software engineers need to focus on structuring this data so it’s easy to perform analysis . In addition, this data needs to be easily accessible for analysts.
+ 
+The research group has with it’s own Big Data analytics system running. Developed over the past 8 years by different software engineers researchers, the mentioned system counts with 3 different parts Collect, Analyze and Analytics. EPIC Collect is the in-house Twitter Streaming client that works 24/7 retrieving tweets from the various events that need to be monitored in real time. Since 2009 this software has been collecting tweets with an uptime of 99\%. On the storage layer, we have Cassandra. This NoSQL database is focused on writes and allows a  really high input. On the other side we have EPIC Analyze, built to help analysts access the data that has been collected on Cassandra. Finally EPIC Analytics is a large machine where analysts execute intensive processes over the collected data.
+
+\section{Containerization}
+
+We understand containerization as operating-system-level virtualization. This technology allows program to be run inside a system, isolated  from each other and the host system. It works similarly than traditional virtual machines from the point of view of a program, but makes use of the underlying system resources instead of running a full powered operating system. It provides an abstraction to for programs to run in. 
+ 
+There are many containerization platforms around, however the most used and the one we will use for this project is Docker. This platform was originated as an internal tool in a PaaS company and later on open-sourced. Thanks to many contributions from different companies, this project grew becoming the most used containerization software. It’s able to run on almost any system and has many integration. In addition, almost all container orchestrator systems support Docker containers
+
+
+\section{Container orchestration technologies}
+
+When containerisation technologies raised due to a migration to microservice architectures, big companies needed a way to manage their containers in a more friendly way. Interconnecting containers, managing their deployment, scaling easily, all this tasks were possible with containers, but they were really difficult. This is why container orchestrations systems were born. In order to manage container, the mentioned systems add an abstraction layer on top of the systems, making such tasks easier to perform.
+ 
+There are a few available container orchestration systems available at the moment. The most popular ones are Kubernetes and Apache Mesos. In this project, we will further explore Kubernetes. The main reason for this is that thanks to its open source community it’s easier to find tutorials and courses. In addition, there are a lot of big companies that are backing this project and contributing to it, which provides a security of a long-term support.
+ 
+Google Cloud seems like the best fit to host Kubernetes as it has a managed cluster option where we don’t need to worry to install and wire up the system. In addition, thanks to Google being part of the maintaining team for Kubernetes, there’s a great support for Google Cloud infrastructure on Kubernetes.
+
+
+\section{Microservices architecture}
+
+
+Microservices is an approach to distributed systems that promote the use of small services with specific responsibilities that collaborate between them, rather than big components with a lot of responsibilities that make interaction more difficult.
+ 
+In addition, thanks to new technologies like containers and container orchestrated systems, they are quickly becoming a standard on the design of big software systems. This type of architecture has been adopted by many companies as it provides a more maintainable model. 
+ 
+Another of the key advantages of Microservices is that it makes it easier to adopt different technologies for each component. In addition to containerization it decouples differents parts of a system systems. This allows a better optimization of technology depending on the feature that each microservice needs to offer. For example a microservice that needs to store a highly related data can make use of separate graph database, exposing a REST API, allowing for a completly abstraction. At the same time a microservice that needs to store big documents can use a document store database underneath, allowing for a better optimization. 
+ 
+ 
+ 
+Having small microservices do specific tasks, makes development cycles faster and more independent. Making incremental deployment way easier and less dangerous. They also make it easier to scale systems. We could individually scale parts of the system independently depending on their usage.
+ 
+Microservices avoid falling in the same problems that previous service-centered architectures had, by centering on their architecture and letting the architect decide the messaging system or deployment type.
+ 
+In addition microservice architecture allows for a better reliance, as each microservice is independent, if one fails, the rest can remain unaffected. This finds a perfect match with container orchestration systems, as they can abstract health checks on microservice as well deploy again microservices that failed.
+ 
+In terms of designing microservice architectures there are a couple of approaches that are equally used at the moment: coreography and orchestration.
+
+%-----------------------------------
+%	SUBSECTION 1
+%-----------------------------------
+\subsection{Coreography}
+
+Coreography approach centers all interaction on a publish-subscribe philsophy. Events are propagated through the system in an asyncronous basis. When something happens in a microservice, it gets published into a public queue. Other microservices can subscribe to this queue and act consequently when they receive an event.
+ 
+This approach makes it the system more flexible, removing the responsability of knowing who to send messages to from the microservices. We can add more components easily without having to modify the existing ones. 
+ 
+However, we need extra components in order to make sure that all tasks are performed once an event is published. We can acomplish this by installing and mantaining a monitoring solution.
+
+%-----------------------------------
+%	SUBSECTION 2
+%-----------------------------------
+
+\subsection{Orchestration}
+
+Orchestration centers interactions in request/response iteractions. Each microservice requests information to any other microservice. For this approach we need of a proper service discover backend. In addition if the service is down, we need to make sure that each microservice retries and is capable of failing gently. 
+ 
+The good thing is that we would be sure that all actions are performed by the end of an action. However if a components takes too long to answer we could break the entire action.
+ 
+A more modern approach to orchestration has been developed with Service meshes. This components take the responsibility of balancing requests as well as allowing for service discovery to happen, they avoid bad crashes by retrying requests. They work by adding a sidecar to all microservices acting as proxy between the microservice and the outside network. Together with a manager that controls service discovery, load balancing and retrying counters. However these are still new technologies being developed and are still on their early releases. In addition they don’t include the choreography extensibility capabilities.
+
+
+%----------------------------------------------------------------------------------------
+%	SECTION 2
+%----------------------------------------------------------------------------------------
+
+\section{Messaging systems}
+
+Messaging systems organize queues of messages produced by some microservices and notify subscribed systems that are consuming queues when they arrive. Their main objective is to  can decouple components and to have a cache if the consumers can’t digest all the incoming messages. This allows for more reliable systems as system don’t depend on the mutual availability to pass messages as they would if they had to use other messaging system like HTTP.
+ 
+There are many options used nowadays the most popular being Apache Kafka and RabbitMQ. Kafka, is a decentralized, high availability system that allows us to publish messages organized by topics. It allows for high parallelizability thanks to the partitions on topics, which lets you read and write at a higher rate in a parallel way.  Each partition can have one consumer associated to it, which makes it faster to read. 
+ 
+Another good thing about Kafka is its persistence system. Thanks to a great integration with the kernel, it performs and persists data faster than other systems. This is due the fact that gives the responsibility to flush to disk to the kernel, taking advantage to disk page caching and memory caching implemented into current operating systems.
+ 
+In addition, Kafka it’s one of the most used messaging systems in the industry nowadays. Many companies use it on their production systems to decouple their systems and increase code responsability repartition. In addition it has a really strong community behind it, as well as some major technology companies like Linkedin maintaining it. Other messaging options include RabbitMQ or NATS.
+ 
+Messaging systems are needed for choreography microservice architectures, as they are the communication layer between microservices. 
+
+
+\section{Big Data storage systems}
+
+We will be tracking Twitter with the Streaming API. As the API is limited to provide a 10\% of the total tweets generated in twitter every minute, we can estimate how many tweets will go through our system. Last report available of tweets per seconds is from 2013. The rate was 5700 tweets\parencite{Reference1} per second on average.  Which means that our system should be able to store 570 tweets every second. In addition we need a platform that scales well with our increasingly large datasets. As previously studied in the EPIC project, we would need to use a NoSQL database instead of a relational database.
+ 
+On the other hand we also need a system that allows analytical and operational queries happening at the same time. We would like to be able to analyze our data in real time without having to stop its storage. Given that some analysis may take a few minutes due to the high amount of items to analyze, we need to  have a system that allows a high throughput for both parts. In this case Cassandra is the best option as the number of operations per seconds scales the most compared to other NoSQL alternatives, especially with operational and analytical workloads 
+ 
+To store tweets we base our table structure on the current EPIC Analyze structured data storage in Cassandra as we can see on the CQL in the next page. In addition we also add an index on the event\_name attribute so that we can access per event faster. We need to add the index as a lot of queries are performed per event, and so we would benefit from accessing tweets from each event in the fastest way.
+\newpage
+\begin{lstlisting}[language=SQL, caption=Tweets CQL table]
+CREATE TABLE twitter_analytics.tweet (
+    id uuid,
+    t_id text,
+    event_kw text,
+    event_name text,
+    hashtags list<text>,
+    media_url text,
+    t_coordinates text,
+    t_created_at timestamp,
+    t_favorite_count int,
+    t_favorited boolean,
+    t_geo text,
+    t_is_a_retweet boolean,
+    t_lang text,
+    t_retweet_count int,
+    t_retweeted boolean,
+    t_text text,
+    u_created_at timestamp,
+    u_description text,
+    u_favourites_count int,
+    u_followers_count int,
+    u_friends_count int,
+    u_geo_enabled boolean,
+    u_id text,
+    u_lang text,
+    u_listed_count int,
+    u_location text,
+    u_name text,
+    u_screen_name text,
+    u_statuses_count int,
+    u_time_zone text,
+    u_url text,
+    u_utc_offset int,
+    um_id text,
+    um_name text,
+    um_screen_name text,
+    urls list<text>,
+    PRIMARY KEY (id, t_id))
+\end{lstlisting}
+
+\section{Software development in microservices architectures}
+Thanks to container-orchestrated systems and the popularization of container systems, software development is easier. With microservices, focus moves out of one component software architecture to organizing the whole system. Now, we can focus on packaging alone components instead of having to packaging all of them at once, which makes the development more flexible. This would allow for a more continuous development in the system allowing for a better performance optimization, and an easier way to keep the system updated with the last set of technologies.

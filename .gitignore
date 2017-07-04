@@ -1,0 +1,13 @@
+*.aux 
+*.log
+*.lot 
+*.out 
+*.xml 
+*.toc 
+main-blx.bib 
+*.lof
+*.bbl 
+*.blg 
+*.dvi 
+*.lol
+.DS_Store
