@@ -39,6 +39,14 @@ Next, we need to modify and create the classification configuration in real time
 
 \end{itemize}
 
-
-
 Finally, Analysts want to access the collected data and perform analysis on top of it. Cassandra is not really prepared to answer specific queries from analysts. Its CQL interface is great for small queries but doesn’t allow for high complexity. In addition, it was never intended to be used as an analysis tool. So we choose a different tool that it's optimized to read and process large datasets: Spark. It is a well known big data processing tool, and it has a connector for Cassandra that takes advantage of the cluster data locality to perform tasks. This way we take the read aspect of the cluster away from Cassandra and give to a tool that has been optimized for this task.In order to make it easier for analysts to access and perform analysis, we will add a web Notebook UI to give analysts an easy way to execute queries on Spark with a web UI.
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{Figures/SysArch}
+\decoRule
+\caption[System architecture]{Proposed system architecture}
+\label{fig:SysArch}
+\end{figure}
+
+\section{Implementation}

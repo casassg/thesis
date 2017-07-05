@@ -5,7 +5,7 @@ Gerard_Casas_Saez_Thesis.pdf: main.pdf
 
 
 main.pdf: main.tex Chapters/*.tex
-	latex main.tex
+	pdflatex main.tex
 	bibtex main
 	pdflatex main.tex
 

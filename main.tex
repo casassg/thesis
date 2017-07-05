@@ -73,6 +73,9 @@ chapterinoneline, % Uncomment to place the chapter title next to the number on o
 \usepackage[utf8]{inputenc} % Required for inputting international characters
 \usepackage[T1]{fontenc} % Output font encoding for international characters
 
+% \usepackage{graphicx}
+% \graphicspath{ {Figures/} }
+
 \usepackage{palatino} % Use the Palatino font by default
 
 \usepackage[backend=bibtex,natbib=true]{biblatex} % Use the bibtex backend with the authoryear citation style (which resembles APA)
@@ -218,10 +221,10 @@ The Thesis Abstract is written here (and usually kept to just this page). The pa
 %	ACKNOWLEDGEMENTS
 %----------------------------------------------------------------------------------------
 
-\begin{acknowledgements}
-\addchaptertocentry{\acknowledgementname} % Add the acknowledgements to the table of contents
-I \ldots
-\end{acknowledgements}
+% \begin{acknowledgements}
+% \addchaptertocentry{\acknowledgementname} % Add the acknowledgements to the table of contents
+% I \ldots
+% \end{acknowledgements}
 
 %----------------------------------------------------------------------------------------
 %	LIST OF CONTENTS/FIGURES/TABLES PAGES
@@ -232,7 +235,7 @@ I \ldots
 	\hypersetup{hidelinks}
 	\tableofcontents % Prints the main table of contents
 
-	% \listoffigures % Prints the list of figures
+	\listoffigures % Prints the list of figures
 
 	% \listoftables % Prints the list of tables
 
@@ -282,7 +285,7 @@ I \ldots
 %	DEDICATION
 %----------------------------------------------------------------------------------------
 
-\dedicatory{For my family and all their encouragement and support to travel to Boulder for this thesis} 
+% \dedicatory{For my family and all their encouragement and support to travel to Boulder for this thesis} 
 
 %----------------------------------------------------------------------------------------
 %	THESIS CONTENT - CHAPTERS
