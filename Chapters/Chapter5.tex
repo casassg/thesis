@@ -1,0 +1,16 @@
+% Chapter Template
+
+\chapter{Results} % Main chapter title
+
+\label{Chapter5} % Change X to a consecutive number; for referencing this chapter elsewhere, use \ref{ChapterX}
+
+After analyzing both systems and comparing their capabilities, we need to check how close have we got to the first stated goal. A part of our goal was to improve reliability and scalability. As seen in the previous section we can probably assume that we have accomplished it. 
+
+Moving the system reliability check to an external tooling allows us to ignore how it will be deployed while developing and focus more on the code and performance of each component. This is a feature that’s making Kubernetes really great for companies. It helps separate the deployment logic with all the reliability and configuration outside, while making it easier for developers to deploy their code. Developers don’t need a system administrator or a system expert to deploy their code, they just need to understand how containerization works. The rest can be done easily. It also allows us for appropriate tooling to be developed. Kubernetes is like a system platform, where you can create your own tooling. Thanks to the community, some reliability is already built-in, and adding capabilities to our deployment system becomes way easier. As an example for reliability, adding monitoring tools into Kubernetes clusters is really easy. The API exposes resource usage allowing you to configure alerts if needed.
+
+Regarding scalability, thanks to the container orchestration and the stateless approach we took, it’s easy to scale service up or down depending on our needs. This is an incredible improvement specially for Big Data Analytics. Resource intensive workload can be scaled on demand whenever we know there will be a high demand. The same for the collection system. We can increase the throughput if the system needs it. 
+
+On the other side, moving to a microservices-centered architecture will hopefully allow for a better development cycle making it easier to make the system evolve independently for each component. This allows for a better maintenance as well. Finally something else that this approach will allow us is extensibility. Thanks to the choreography approach, we now can add components to the system without having to change any other component.
+
+Finally regarding performance, we got closer to real-time analysis by moving the query resolving responsibility to Spark, allowing for a high flexibility on the query thanks to Spark SQL and other toolings.
+
