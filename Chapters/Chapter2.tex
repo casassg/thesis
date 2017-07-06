@@ -102,8 +102,9 @@ We will be tracking Twitter with the Streaming API. As the API is limited to pro
 On the other hand we also need a system that allows analytical and operational queries happening at the same time. We would like to be able to analyze our data in real time without having to stop its storage. Given that some analysis may take a few minutes due to the high amount of items to analyze, we need to  have a system that allows a high throughput for both parts. In this case Cassandra is the best option as the number of operations per seconds scales the most compared to other NoSQL alternatives, especially with operational and analytical workloads\parencite{benchmarkNoSQL}.
  
 To store tweets we base our table structure on the current EPIC Analyze structured data storage in Cassandra as we can see on the CQL in the next page. In addition we also add an index on the event\_name attribute so that we can access per event faster. We need to add the index as a lot of queries are performed per event, and so we would benefit from accessing tweets from each event in the fastest way.
-\newpage
-\begin{lstlisting}[language=SQL, caption=Tweets CQL table]
+
+
+\begin{lstlisting}[language=SQL, caption={Tweets CQL table script}, float, floatplacement=H ]
 CREATE TABLE twitter_analytics.tweet (
     id uuid,
     t_id text,
@@ -143,6 +144,7 @@ CREATE TABLE twitter_analytics.tweet (
     urls list<text>,
     PRIMARY KEY (id, t_id))
 \end{lstlisting}
+
 
 \section{Software development in microservices architectures}
 Thanks to container-orchestrated systems and the popularization of container systems, software development is easier. With microservices, focus moves out of one component software architecture to organizing the whole system. Now, we can focus on packaging alone components instead of having to packaging all of them at once, which makes the development more flexible. This would allow for a more continuous development in the system allowing for a better performance optimization, and an easier way to keep the system updated with the last set of technologies.

@@ -39,27 +39,28 @@ chapterinoneline, % Uncomment to place the chapter title next to the number on o
 ]{MastersDoctoralThesis} % The class file specifying the document structure
 
 \usepackage{listings}
+\usepackage{float}
 
 \lstset{
-  frame=top,frame=bottom,
-  basicstyle=\small\normalfont\sffamily,    % the size of the fonts that are used for the code
-  stepnumber=1,                           % the step between two line-numbers. If it is 1 each line will be numbered
-  numbersep=10pt,                         % how far the line-numbers are from the code
+  frame=top,
+  basicstyle=\footnotesize,    % the size of the fonts that are used for the code
   tabsize=2,                              % tab size in blank spaces
   extendedchars=true,                     %
   breaklines=true,                        % sets automatic line breaking
-  captionpos=t,                           % sets the caption-position to top
+  captionpos=b,                           % sets the caption-position to top
   mathescape=true,
-  stringstyle=\color{white}\ttfamily, % Farbe der String
   showspaces=false,           % Leerzeichen anzeigen ?
   showtabs=false,             % Tabs anzeigen ?
   xleftmargin=17pt,
+  belowcaptionskip=1em,
+  aboveskip=2em,
   framexleftmargin=17pt,
   framexrightmargin=17pt,
   framexbottommargin=5pt,
   framextopmargin=5pt,
   showstringspaces=false      % Leerzeichen in Strings anzeigen ?
  }
+
 
 \DeclareCaptionFormat{listing}{\rule{\dimexpr\textwidth+17pt\relax}{0.4pt}\par\vskip1pt#1#2#3}
 \captionsetup[lstlisting]{format=listing,singlelinecheck=false, margin=0pt, font={sf},labelsep=space,labelfont=bf}
@@ -68,6 +69,8 @@ chapterinoneline, % Uncomment to place the chapter title next to the number on o
 \SetSymbolFont{operators}{sans}{OT1}{cmbr}{m}{n}
 \SetSymbolFont{letters}  {sans}{OML}{cmbrm}{m}{it}
 \SetSymbolFont{symbols}  {sans}{OMS}{cmbrs}{m}{n}
+
+
 
 
 \usepackage[utf8]{inputenc} % Required for inputting international characters
@@ -112,7 +115,7 @@ chapterinoneline, % Uncomment to place the chapter title next to the number on o
 \subject{Informatic Engineering} % Your subject area, this is not currently used anywhere in the template, print it elsewhere with \subjectname
 \keywords{} % Keywords for your thesis, this is not currently used anywhere in the template, print it elsewhere with \keywordnames
 \university{\href{http://www.upc.edu}{Universitat Politècnica de Catalunya}} % Your university's name and URL, this is used in the title page and abstract, print it elsewhere with \univname
-\faculty{Facultat de Informatica de Barcelona} % Your faculty's name and URL, this is used in the title page and abstract, print it elsewhere with \facname
+\faculty{\href{http://fib.upc.edu/}{Facultat de Informatica de Barcelona}} % Your faculty's name and URL, this is used in the title page and abstract, print it elsewhere with \facname
 \department{\href{http://colorado.edu/}{University of Colorado Boulder}} % Your department's name and URL, this is used in the title page and abstract, print it elsewhere with \deptname
 \group{\href{http://epic.cs.colorado.edu/}{Project EPIC Research Group}} % Your research group's name and URL, this is used in the title page, print it elsewhere with \groupname
 
@@ -121,6 +124,7 @@ chapterinoneline, % Uncomment to place the chapter title next to the number on o
 \hypersetup{pdftitle=\ttitle} % Set the PDF's title to your title
 \hypersetup{pdfauthor=\authorname} % Set the PDF's author to your name
 \hypersetup{pdfkeywords=\keywordnames} % Set the PDF's keywords to your keywords
+\hypersetup{linkcolor=black}
 }
 
 \begin{document}
@@ -231,7 +235,6 @@ The Thesis Abstract is written here (and usually kept to just this page). The pa
 %----------------------------------------------------------------------------------------
 
 {
-	\hypersetup{linkcolor=black}
 	\hypersetup{hidelinks}
 	\tableofcontents % Prints the main table of contents
 
@@ -301,7 +304,7 @@ The Thesis Abstract is written here (and usually kept to just this page). The pa
 \include{Chapters/Chapter1}
 \include{Chapters/Chapter2} 
 \include{Chapters/Chapter3}
-%\include{Chapters/Chapter4} 
+\include{Chapters/Chapter4} 
 %\include{Chapters/Chapter5} 
 
 %----------------------------------------------------------------------------------------
