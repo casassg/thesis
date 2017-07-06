@@ -8,14 +8,16 @@
 
 Big Data Analytics is quickly becoming one of the most emergent fields of work. Data is being generated at an increasing rate. Every month, 72 Petabytes are moved around the Internet\parencite{ciscoreport}. This amount is expected to grow into 232 Petabytes/month by 2021\parencite{ciscoreport}. This rapid growth is probably one of the biggest challenges we face in the computer science world. As a consequence, new systems need to be designed to support all of this demand, keeping the response time as well. 
 
- 
-On the other hand, containerization is becoming a trend nowadays. Thanks to companies like Docker and its Docker Engine, containers are becoming a de facto standard for software development. It’s ease of use and consistent behaviour between systems makes it attractive to developers, as they prefer avoiding difficult and long system setup every time they need to run an application.
- 
-With this trend, complexities arrived: difficulties to configure the network and interaction between containers, difficulties to deploy and release new versions and way more. That’s when container orchestrated system arrived. They are an abstraction layer over the container management. This systems are in charge of coordinating containers, creating them, destroying them: all the container lifecycle is controlled by the system.
- 
+Containerization is also becoming a trend nowadays. The ability to run software in separate environments has been a revolution for the tech industry. Containerization is an abstraction for the installation process that allows developers to avoid long installation processes on each system they need to run the software. It’s similar to virtual machines but optimized to use system resources instead of simulated resources. Thanks to companies like Docker, containers are becoming a de facto standard for software development and deployment. It’s ease of use and consistent behaviour between systems makes it attractive to developers.
+
+However there are a few complexities: network configuration, interaction between containers, difficulties to deploy and release new versions and more. To solve this complexities, container orchestrated system arrived. They are another abstraction layer, this one goes above containers and it's in charge of its management. This systems are in charge of coordinating containers, creating them, destroying them: all the container lifecycle is controlled by the system.
+
 As this systems are becoming more and more popular, software architecture will need to adapt to embrace the new possibilities that this systems provide. Some concepts that previously were close to impossible to do, now are available to any software architect. Applications no longer need to have an static infrastructure, container orchestrated systems can grow and decrease on demand. Systems can be splitted in small microservices, there’s no need to merge everything a big monolith application anymore.
- 
+
 In addition, cloud providers are adding support for container orchestrated systems. This makes it even easier to deploy complex infrastructures. Also, you can design systems independently of the providers. 
- 
+
 It also helps to find new ways to solve the problem of parallelism and scaling, making it easier to deploy new machines opens the door to new possibilities to have infrastructure on demand or to scale automatically.
+
+In this work, I’ll try to dig into the complexities of Container Orchestrated systems and microservices, focusing on a Big Data Analytics infrastructure
+
  
