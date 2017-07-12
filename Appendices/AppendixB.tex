@@ -1,64 +1,99 @@
 % Appendix Template
 
-\chapter{Kubernetes YAML configuration} % Main appendix title
+\chapter{Deploying microservices in Kubernetes} % Main appendix title
 
 \label{AppendixB} % Change X to a consecutive letter; for referencing this appendix elsewhere, use \ref{AppendixX}
 
-As we stated in \autoref{Chapter6}, all the system has been built using Kubernets YAML configuration files. Here is an example for the Event Manager UI deployment.
+As we stated in \autoref{Chapter6}, all the system has been built to be deployed using Kubernets YAML configuration files. However the process of deploying a microservice is not stated. Here we describe how to deploy Event Manager UI from scratch as an example.
 
-\section{Event Manager UI deployment file}
+\section{Docker image}
+
+The first thing that needs to be done in to create a docker image. This can be done by defining a Dockerfile for the project. Once that is done, we can create the image by running \texttt{docker build -t projectepic/eventmanager-ui .} in the Dockerfile folder.
 
 \begin{lstlisting}[]
+FROM python:3.6-alpine
+
+RUN mkdir /code
+WORKDIR /code
+
+# Install dependencies from requirement.txt
+ADD requirements.txt /code/
+RUN pip install -r requirements.txt
+
+#Add apps code to image
+ADD manage.py /code/
+RUN mkdir /code/events
+ADD events /code/events
+RUN mkdir /code/eventmanager
+ADD eventmanager /code/eventmanager
+RUN mkdir /code/db
+
+# Collect static resources in image
+RUN python manage.py collectstatic --noinput
+
+# Expose port 80 from inside the container
+EXPOSE 80
+
+# Add start script
+ADD start.sh /code/
+
+# Add external mountable volume on the DB folder
+VOLUME ["/code/db",]
+
+# Define starting point
+ENTRYPOINT /code/start.sh
+\end{lstlisting}
+
+The base image is Python Alpine, which is a low resource image for Python. Thanks to this our new image is not as big as if we used the regular Python image. In addition we include a volume to save state betweet restarts and a port exposed to access the inner defined server. After being created we need to add a tag to the image so that we can decide what version to use on deployment.
+
+Once the image is created and tagged, we need to push it to an Image Registry service. The choice for this project has been DockerHub, but any other can be used as long as it's accessible by the Kubernetes cluster.
+
+\section{Kubernetes deployment YAML file}
+
+This is a YAML configuration file for the Event Manager UI. The important part is the specification section (\textit{spec}). There you set the number of replicas you want to be deployed and specify the template for each pod that will be deployed as part of the deployment. For the pod template you need to specify the image, the resources it will use and the environment variables. We also include a readiness probe, which will be executed on start to check wether or not the application in the container has been start and it's running smoothly. Finally we declare a volume to be mounted on the pod in the db path as defined in the Dockerfile previously. We also declare how to claim the volume by specifying a volume claim. This will ensure that the same volume is mounted between restarts making sure our data is kept.
+
+\begin{lstlisting}[float, floatplacement=H]
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: k8s-controller
+  name: eventmanager-ui
+  namespace: frontend
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: k8s-controller
+        app: eventmanager-ui
     spec:
       terminationGracePeriodSeconds: 10
       containers:
-      - name: k8scontroller
-        image: projectepic/k8s-controller:latest
+      - name: eventmanager
+        image: projectepic/eventmanager-ui:1.1.8
+        ports:
+        - containerPort: 80
         resources:
           limits:
-           memory: 50Mi
-           cpu: "50m"
+            cpu: 100m
+            memory: 50Mi
           requests:
-           memory: 50Mi
-           cpu: "50m"
+            cpu: 100m
+            memory: 50Mi
         env:
             - name: KAFKA_SERVERS
-              value: kafka-0.broker.kafka.svc.cluster.local:9092,kafka-1.broker.kafka.svc.cluster.local:9092,kafka-2.broker.kafka.svc.cluster.local:9092
-            - name: CASSANDRA_SERVERS
-              value: cassandra-0.cassandra.cassandra.svc.cluster.local,cassandra-1.cassandra.cassandra.svc.cluster.local
-            - name: ACCESS_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: twsecret
-                  key: access_token
-            - name: ACCESS_TOKEN_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: twsecret
-                  key: access_token_secret
-            - name: CONSUMER_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: twsecret
-                  key: consumer_key
-            - name: CONSUMER_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: twsecret
-                  key: consumer_secret
-            - name: TWEET_CASSANDRA_VERSION
-              value: 1.2.7
-            - name: TWITTER_STREAMING_VERSION
-              value: 1.0.4
+              value: kafka-0.broker.kafka.svc.cluster.local:9092,kafka-1.broker.kafka.svc.cluster.local:9092
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+        volumeMounts:
+        - name: datadir
+          mountPath: /code/db
+      volumes:
+      - name: datadir
+        persistentVolumeClaim:
+          claimName: eventmanager-db
 \end{lstlisting}
+
+To deploy we can use either the Kubectl command line  properly configured or the web interface by uploading the configuration file. Both ways have the same effect.
+
 
