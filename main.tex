@@ -39,6 +39,7 @@ chapterinoneline, % Uncomment to place the chapter title next to the number on o
 ]{MastersDoctoralThesis} % The class file specifying the document structure
 
 \usepackage{listings}
+\usepackage{LatexExtensions/listings-golang} % import this package after listings
 \usepackage{float}
 
 \lstset{
@@ -321,8 +322,8 @@ The Thesis Abstract is written here (and usually kept to just this page). The pa
 % Include the appendices of the thesis as separate files from the Appendices folder
 % Uncomment the lines as you write the Appendices
 
-% \include{Appendices/AppendixA}
-%\include{Appendices/AppendixB}
+\include{Appendices/AppendixA}
+\include{Appendices/AppendixB}
 %\include{Appendices/AppendixC}
 
 %----------------------------------------------------------------------------------------

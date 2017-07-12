@@ -1,25 +1,521 @@
 % Appendix A
 
-\chapter{Frequently Asked Questions} % Main appendix title
+\chapter{Microservices code} % Main appendix title
 
 \label{AppendixA} % For referencing this appendix elsewhere, use \ref{AppendixA}
 
-\section{How do I change the colors of links?}
+Attached here is a version of the code developed for some of the custom microservices discussed in \autoref{Chapter4}. The event manager UI is not included due to the extensivity of the codebase.
 
-The color of links can be changed to your liking using:
+\section{Twitter Tracker}
 
-{\small\verb!\hypersetup{urlcolor=red}!}, or
+\subsection{twitter\_tracker.go}
 
-{\small\verb!\hypersetup{citecolor=green}!}, or
+\begin{lstlisting}[language=Golang]
+package main
 
-{\small\verb!\hypersetup{allcolor=blue}!}.
+// OAuth1
+import (
+	"github.com/dghubble/oauth1"
+	"os"
+	"bufio"
+	"strings"
+	"net/url"
+	"gopkg.in/Shopify/sarama.v1"
+	"log"
+)
 
-\noindent If you want to completely hide the links, you can use:
+// Line separator function, detects new lines
+func scanLines(data []byte, atEOF bool) (advance int, token []byte, err error) {
+	if atEOF && len(data) == 0 {
+		return 0, nil, nil
+	}
+	if i := strings.Index(string(data), "\r\n"); i >= 0 {
+		// We have a full '\r\n' terminated line.
+		return i + 2, data[0:i], nil
+	}
+	// If we're at EOF, we have a final, non-terminated line. Return it.
+	if atEOF {
+		return len(data), dropCR(data), nil
+	}
+	// Request more data.
+	return 0, nil, nil
+}
 
-{\small\verb!\hypersetup{allcolors=.}!}, or even better: 
+func dropCR(data []byte) []byte {
+	if len(data) > 0 && data[len(data)-1] == '\n' {
+		return data[0: len(data)-1]
+	}
+	return data
+}
 
-{\small\verb!\hypersetup{hidelinks}!}.
 
-\noindent If you want to have obvious links in the PDF but not the printed text, use:
+func main() {
+	// Get environment variables
+	var access_token = os.Getenv("ACCESS_TOKEN")
+	var token_secret = os.Getenv("ACCESS_TOKEN_SECRET")
+	var consumer_key = os.Getenv("CONSUMER_KEY")
+	var consumer_secret = os.Getenv("CONSUMER_SECRET")
+	var tokens = os.Getenv("TOKENS")
+	var kafka_servers = strings.Split(os.Getenv("KAFKA_SERVERS"),",")
 
-{\small\verb!\hypersetup{colorlinks=false}!}.
+	// Prepare OAuth1 client
+	conf := oauth1.NewConfig(consumer_key, consumer_secret)
+	token := oauth1.NewToken(access_token, token_secret)
+	client := conf.Client(oauth1.NoContext, token)
+	v := url.Values{}
+	v.Set("track", tokens)
+
+	// Get url for stream
+	stream_url := "https://stream.twitter.com/1.1/statuses/filter.json?" + v.Encode()
+
+	// Connect to URL with POST
+	resp, err := client.Post(stream_url, "application/json", nil)
+
+	if err != nil {
+		log.Fatalf("Error while connecting to twitter: %s", err)
+		panic(err)
+		return
+	}
+
+	if resp.StatusCode != 200 {
+		log.Fatalf("Error while connecting to twitter, status code returned: %d", resp.StatusCode)
+		panic(err)
+		return
+	}
+
+	// Create buffer scanner for request and split by custom function
+	scanner := bufio.NewScanner(resp.Body)
+	scanner.Split(scanLines)
+
+	// Start asyncronous kafka producer
+	producer, err := sarama.NewAsyncProducer(kafka_servers, nil)
+
+	// Close producer before exiting program
+	defer func() {
+		if err := producer.Close(); err != nil {
+			log.Fatalln(err)
+		}
+	}()
+
+	if err != nil {
+		log.Fatalf("Error while bootstraping Kafka producer: %s", err)
+		panic(err)
+		return
+	}
+
+	// Start separate thread to track Kafka produced errors
+	go func() {
+		for err := range producer.Errors() {
+			log.Fatalf("Kafka error: %s", err)
+			// Exit application if any error from Kafka
+			// Force Kubernetes to recover
+			os.Exit(2)
+		}
+	}()
+
+	// Main loop to scan request. Only breaks if error from Kafka.
+	for scanner.Scan() {
+		tweet := scanner.Bytes()
+		if len(token) == 0 {
+			// empty keep-alive
+			continue
+		}
+
+		// Send tweet to producer
+		producer.Input() <- &sarama.ProducerMessage{Topic: "raw_tweets", Key: nil, Value: sarama.StringEncoder(tweet)}
+		log.Printf("Tweet received")
+	}
+	log.Printf("Closing")
+
+}
+\end{lstlisting}
+\newpage
+\section{Twitter Normalizer}
+
+\subsection{model.py}
+
+\begin{lstlisting}[language=Python]
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+import logging
+import os
+import socket
+import uuid
+from datetime import datetime
+import ujson
+from cassandra.cluster import Cluster
+from cassandra.cqlengine import columns, connection
+from cassandra.cqlengine.management import sync_table
+from cassandra.cqlengine.models import Model
+
+CASSANDRA_IPS = list(
+    map(socket.gethostbyname, os.environ.get('CASSANDRA_NODES', '127.0.0.1').replace(' ', '').split(',')))
+KEYSPACE = 'twitter_analytics'
+
+# Tweet model definition as Python Class
+class Tweet(Model):
+    id = columns.UUID(primary_key=True, default=uuid.uuid4)
+    event_name = columns.Text(index=True)
+    t_id = columns.Text(primary_key=True, clustering_order="DESC")
+    event_kw = columns.Text()
+    t_created_at = columns.DateTime()
+    t_text = columns.Text()
+    t_retweet_count = columns.Integer()
+    t_favorite_count = columns.Integer()
+    t_geo = columns.Text()
+    t_coordinates = columns.Text()
+    t_favorited = columns.Boolean()
+    t_retweeted = columns.Boolean()
+    t_is_a_retweet = columns.Boolean()
+    t_lang = columns.Text()
+    u_id = columns.Text()
+    u_name = columns.Text()
+    u_screen_name = columns.Text()
+    u_location = columns.Text()
+    u_url = columns.Text()
+    u_lang = columns.Text()
+    u_description = columns.Text()
+    u_time_zone = columns.Text()
+    u_geo_enabled = columns.Boolean()
+    media_url = columns.Text()
+    um_screen_name = columns.Text()
+    um_name = columns.Text()
+    um_id = columns.Text()
+    u_followers_count = columns.Integer()
+    u_friends_count = columns.Integer()
+    u_listed_count = columns.Integer()
+    u_favourites_count = columns.Integer()
+    u_utc_offset = columns.Integer()
+    u_statuses_count = columns.Integer()
+    u_created_at = columns.DateTime()
+    hashtags = columns.List(value_type=columns.Text)
+    urls = columns.List(value_type=columns.Text)
+
+
+logging.info('Connecting to cassandra...')
+
+cluster = Cluster(CASSANDRA_IPS)
+with cluster.connect() as session:
+    logging.info('Creating keyspace...')
+    # Keyspace creation
+    session.execute("""
+           CREATE KEYSPACE IF NOT EXISTS %s
+           WITH replication = { 'class': 'SimpleStrategy', 'replication_factor': '1' }
+           """ % KEYSPACE)
+
+    # Establish connection with Cassandra cluster
+    connection.setup(CASSANDRA_IPS, KEYSPACE, protocol_version=3)
+
+    #Table creation
+    logging.info('Creating table...')
+    sync_table(Tweet)
+
+
+def create_dict(event_key, event_kw, tweet):
+    return {
+        'id':str(uuid.uuid1()),
+        't_id': tweet['id_str'],
+        'event_kw': ','.join(event_kw),
+        'event_name': event_key,
+        't_created_at': datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y').isoformat(),
+        't_text': tweet['text'],
+        't_retweet_count': tweet['retweet_count'],
+        't_favorite_count': tweet['favorite_count'],
+        't_geo': str(tweet['geo']),
+        't_coordinates': str(tweet['coordinates']),
+        't_favorited': tweet['favorited'],
+        't_retweeted': tweet['retweeted'],
+        't_is_a_retweet': 'retweeted_status' in tweet,
+        't_lang': tweet['lang'],
+        'u_id': tweet['user']['id_str'],
+        'u_name': tweet['user']['name'],
+        'u_screen_name': tweet['user']['screen_name'],
+        'u_location': tweet['user']['location'],
+        'u_url': tweet['user']['url'],
+        'u_lang': tweet['user']['lang'],
+        'u_description': tweet['user']['description'],
+        'u_time_zone': tweet['user']['time_zone'],
+        'u_geo_enabled': bool(tweet['user']['geo_enabled']),
+        'u_followers_count': tweet['user']['followers_count'],
+        'u_friends_count': tweet['user']['friends_count'],
+        'u_favourites_count': tweet['user']['favourites_count'],
+        'u_statuses_count': tweet['user']['statuses_count'],
+        'u_created_at': datetime.strptime(tweet['user']['created_at'], '%a %b %d %H:%M:%S +0000 %Y').isoformat(),
+        'hashtags': list(map(lambda h: h['text'], tweet['entities']['hashtags'])),
+        'urls': list(map(lambda url: url['url'], tweet['entities']['urls'])),
+        # Concat names with a space separation
+        'um_screen_name': ' '.join(map(lambda um: str(um['screen_name']), tweet['entities']['user_mentions'])),
+        'um_name': ' '.join(map(lambda um: str(um['name']), tweet['entities']['user_mentions'])),
+        'um_id': ' '.join(map(lambda um: str(um['id_str']), tweet['entities']['user_mentions'])),
+        'media_url': ' '.join(map(lambda m: str(m['media_url_https']), tweet['entities']['media']))
+        if 'media' in tweet['entities'] else None,
+
+    }
+
+
+session = connection.session
+prep_query = session.prepare("INSERT INTO %s.tweet JSON ?" % KEYSPACE)
+
+
+def save_tweet(tweet, event_key, event_kw):
+    session.execute_async(prep_query, [ujson.dumps(create_dict(event_key, event_kw, tweet)), ])
+\end{lstlisting}
+
+\newpage
+
+
+\subsection{tweetparser.py}
+
+
+\begin{lstlisting}[language=Python]
+import logging
+import os
+import sys
+import ujson
+from confluent_kafka import Consumer, KafkaError, KafkaException
+
+EVENT_KEY = os.environ.get('EVENT_KEY', '')
+assert EVENT_KEY, 'Event key must be specified as environment variable'
+
+TOKENS = list(filter(None, os.environ.get('TOKENS', '').split(',')))
+assert TOKENS, 'Tokens can\'t be empty'
+
+KAFKA_SERVER = os.environ.get('KAFKA_SERVERS', 'localhost:9092')
+
+def main(save):
+    conf = {'bootstrap.servers': KAFKA_SERVER,
+            'group.id': EVENT_KEY,
+            'session.timeout.ms': 6000,
+            'default.topic.config': {'auto.offset.reset': 'smallest'}
+            }
+    # Create Kafka consumer with specified configuration
+    c = Consumer(**conf)
+
+    # Custom function for assignment printing
+    def print_assignment(consumer, partitions):
+        logging.info('Assignment: %s' % partitions)
+
+    # Subscribe to topics
+    c.subscribe(['raw_tweets', ], on_assign=print_assignment)
+
+    msg_count = 0
+    while True:
+        msg = c.poll()
+        if msg is None:
+            continue
+        if msg.error():
+            # Error or event
+            if msg.error().code() == KafkaError._PARTITION_EOF:
+                # End of partition event
+                logging.info('%% %s [%d] reached end at offset %d' % (msg.topic(), msg.partition(), msg.offset()))
+            elif msg.error():
+                # Error
+                raise KafkaException(msg.error())
+        else:
+            tweet = None
+            try:
+                tweet = ujson.loads(msg.value())
+            except TypeError:
+                logging.error("Message not json: %s" % msg.value())
+                continue
+            except ValueError:
+                logging.error("Message not json: %s" % msg.value())
+                continue
+
+            # Twitter internal messages are discarded here
+            if 'text' not in tweet:
+                logging.info('Internal message: %s' % tweet)
+                continue
+            msg_count += 1
+
+            # Check if tweet should be stored
+            if any(token in tweet['text'] for token in TOKENS):
+                logging.info('Tweet accepted: %s:%d:%d: key=%s tweet_id=%s' %
+                             (msg.topic(), msg.partition(), msg.offset(),
+                              str(msg.key()), tweet['id']))
+                save(tweet, EVENT_KEY, TOKENS)
+
+        # Readiness write on first message (used by Kubernetes)
+        if msg_count == 1:
+            open('/tmp/healthy', 'a').close()
+
+
+if __name__ == "__main__":
+    logging.basicConfig(
+        format='%(asctime)s.%(msecs)s%(levelname)s:%(message)s',
+        level=logging.INFO
+    )
+    import model
+
+    logging.info('Event: %s' % EVENT_KEY)
+    logging.info('Tracking keywords: %s' % ','.join(TOKENS))
+    logging.info('Kafka servers: %s' % KAFKA_SERVER)
+    logging.info('Connecting to Cassandra...')
+    logging.info('Start stream track')
+    if not TOKENS:
+        logging.error('Tokens can\'t be empty')
+    main(model.save_tweet)
+
+\end{lstlisting}
+\newpage
+\section{Infrastructure Controller}
+
+There's also YAML templates to generate the deployments that are sent to Kubernetes. I don't include them here. To check some sample YAML file see \autoref{AppendixB}
+
+\subsection{start.py}
+
+\begin{lstlisting}[language=Python]
+import json
+import logging
+import os
+
+from kafka import KafkaConsumer
+
+import k8scontroller
+
+bootstrap_servers = os.environ.get('KAFKA_SERVERS', 'localhost:9092').split(',')
+topic = os.environ.get('KAFKA_TOPIC', 'events')
+
+TEST_TYPE = 'test'
+EVENT_TYPE = 'event'
+QUERIES_TYPE = 'queries'
+
+UPDATE_ACTION = 'update'
+REFRESH_ACTION = 'refresh'
+IGNORE_ACTION = 'ignore'
+
+
+def main():
+    consumer = KafkaConsumer(topic, group_id='k8scontroller-eventparser', bootstrap_servers=bootstrap_servers,
+                             value_deserializer=lambda m: json.loads(m.decode('utf-8')))
+
+    for message in consumer:
+        value = message.value
+        type_ = value['type']
+        action = value['action']
+        if (action == UPDATE_ACTION or action == REFRESH_ACTION) and type_ == EVENT_TYPE:
+            data = value['data']
+            try:
+                if data['tracking'] and data['tokens'].replace(' ', '').replace(',', ''):
+                    k8scontroller.apply_eventparser(data['code'], data['tokens'])
+                    logging.info('Created event partser for event: %s' % data['code'])
+            except KeyError:
+                logging.info('Message received was not formatted correctly. Message:\n %s' % data)
+        elif (action == UPDATE_ACTION or action == REFRESH_ACTION) and type_ == QUERIES_TYPE:
+            tokens = value['data']
+            try:
+                k8scontroller.update_queries(tokens)
+                logging.info('Updated twitter streaming with queries: %s' % tokens)
+            except KeyError:
+                logging.info('Message received was not formatted correctly. Message:\n %s' % value)
+
+
+if __name__ == "__main__":
+    logging.basicConfig(
+        format='%(asctime)s.%(msecs)s:%(name)s:%(thread)d:%(levelname)s:%(process)d:%(message)s',
+        level=logging.INFO
+    )
+    logging.info('Checking Kubernetes connection...')
+    logging.info('Kubernetes current pods ips: %s' % k8scontroller.get_pod_ips())
+
+    logging.info('Kafka servers: %s' % ','.join(bootstrap_servers))
+    logging.info('Start tracking changes')
+    main()
+\end{lstlisting}
+
+\newpage
+\subsection{k8scontroller.py}
+
+\begin{lstlisting}[language=Python]
+import os
+
+import logging
+import yaml
+from kubernetes import client, config
+from kubernetes.client.rest import ApiException
+
+KAFKA_SERVERS = os.environ.get('KAFKA_SERVERS', 'localhost:9092')
+CASSANDRA_SERVERS = os.environ.get('CASSANDRA_SERVERS', 'localhost')
+
+ACCESS_TOKEN = os.environ.get("ACCESS_TOKEN", "ENTER YOUR ACCESS TOKEN")
+ACCESS_TOKEN_SECRET = os.environ.get("ACCESS_TOKEN_SECRET", "ENTER YOUR ACCESS TOKEN SECRET")
+CONSUMER_KEY = os.environ.get("CONSUMER_KEY", "ENTER YOUR API KEY")
+CONSUMER_SECRET = os.environ.get("CONSUMER_SECRET", "ENTER YOUR API SECRET")
+TWEET_CASSANDRA_VERSION = os.environ.get("TWEET_CASSANDRA_VERSION", "1.2.1")
+TWITTER_STREAMING_VERSION = os.environ.get("TWITTER_STREAMING_VERSION", "1.1.0")
+
+
+def load_config():
+    try:
+        config.load_kube_config()
+    except:
+        config.load_incluster_config()
+
+
+def get_pod_ips():
+    # Configs can be set in Configuration class directly or using helper utility
+
+    load_config()
+
+    v1 = client.CoreV1Api()
+    logging.info("Listing pods with their IPs:")
+    ret = v1.list_pod_for_all_namespaces(watch=False)
+    return list(map(lambda x: x.status.pod_ip, ret.items))
+
+
+def apply_eventparser(event_code, keywords):
+    load_config()
+
+    with open("k8sdeployments/tweet_cassandra.yaml") as f:
+        name = '%s-event-parser' % event_code
+        dep = yaml.load(
+            f.read()
+                .replace('{{code}}', event_code)
+                .replace('{{keywords}}', keywords)
+                .replace('{{name}}', name)
+                .replace('{{version}}', TWEET_CASSANDRA_VERSION)
+                .replace('{{kafka-servers}}', KAFKA_SERVERS)
+                .replace('{{cassandra-servers}}', CASSANDRA_SERVERS)
+
+
+
+        )
+
+        k8s_beta = client.ExtensionsV1beta1Api()
+        try:
+            resp = k8s_beta.create_namespaced_deployment(
+                body=dep, namespace="default")
+        except ApiException as e:
+            resp = k8s_beta.patch_namespaced_deployment(name,
+                                                        body=dep, namespace="default")
+
+        return resp
+
+
+def update_queries(queries):
+    load_config()
+    with open("k8sdeployments/twitter_tracker.yaml") as f:
+        name = 'twitter-tracker'
+        dep = yaml.load(
+            f.read()
+                .replace('{{a_token}}', ACCESS_TOKEN)
+                .replace('{{a_token_secret}}', ACCESS_TOKEN_SECRET)
+                .replace('{{c_key}}', CONSUMER_KEY)
+                .replace('{{c_secret}}', CONSUMER_SECRET)
+                .replace('{{queries}}', ','.join(queries))
+                .replace('{{version}}', TWITTER_STREAMING_VERSION)
+                .replace('{{kafka-servers}}', KAFKA_SERVERS)
+        )
+
+        k8s_beta = client.ExtensionsV1beta1Api()
+        try:
+            resp = k8s_beta.create_namespaced_deployment(
+                body=dep, namespace="default")
+        except ApiException as e:
+            resp = k8s_beta.patch_namespaced_deployment(name,
+                                                        body=dep, namespace="default")
+
+        return resp
+\end{lstlisting}
+
+

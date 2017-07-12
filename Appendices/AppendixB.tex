@@ -1,0 +1,64 @@
+% Appendix Template
+
+\chapter{Kubernetes YAML configuration} % Main appendix title
+
+\label{AppendixB} % Change X to a consecutive letter; for referencing this appendix elsewhere, use \ref{AppendixX}
+
+As we stated in \autoref{Chapter6}, all the system has been built using Kubernets YAML configuration files. Here is an example for the Event Manager UI deployment.
+
+\section{Event Manager UI deployment file}
+
+\begin{lstlisting}[]
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: k8s-controller
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: k8s-controller
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: k8scontroller
+        image: projectepic/k8s-controller:latest
+        resources:
+          limits:
+           memory: 50Mi
+           cpu: "50m"
+          requests:
+           memory: 50Mi
+           cpu: "50m"
+        env:
+            - name: KAFKA_SERVERS
+              value: kafka-0.broker.kafka.svc.cluster.local:9092,kafka-1.broker.kafka.svc.cluster.local:9092,kafka-2.broker.kafka.svc.cluster.local:9092
+            - name: CASSANDRA_SERVERS
+              value: cassandra-0.cassandra.cassandra.svc.cluster.local,cassandra-1.cassandra.cassandra.svc.cluster.local
+            - name: ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: twsecret
+                  key: access_token
+            - name: ACCESS_TOKEN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: twsecret
+                  key: access_token_secret
+            - name: CONSUMER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: twsecret
+                  key: consumer_key
+            - name: CONSUMER_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: twsecret
+                  key: consumer_secret
+            - name: TWEET_CASSANDRA_VERSION
+              value: 1.2.7
+            - name: TWITTER_STREAMING_VERSION
+              value: 1.0.4
+\end{lstlisting}
+
