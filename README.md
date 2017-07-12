@@ -11,5 +11,5 @@
 ## Structure
 
 - Each chapters is represented by a file in the [Chapters](Chapters/) folder
-- Each appendix is represented by a file in the [Appendices](Appendices/) folder 
-- Each Figure is included in All [Figures](Figures/) folder
+- Appendices are embeded by individual files located in the [Appendices](Appendices/) folder 
+- All figures are attached from [Figures](Figures/) folder
