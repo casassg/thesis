@@ -1,7 +1,13 @@
 % Chapter Template
 
-\chapter{Conclusions} % Main chapter title
+\chapter{Related Work} % Main chapter title
 
 \label{Chapter8} % Change X to a consecutive number; for referencing this chapter elsewhere, use \ref{ChapterX}
 
-TODO
+There has been a lot of research on big data analytics. Open source tools like Hadoop or Spark have made available scalable, distributed computation to the general public. In addition thanks to the progress in Big data storage with systems like Cassandra, hosting internal storage has never been easier. However there’s not a lot of work regarding container-orchestration for big data analysis systems. There has been a lot work in both fields, but there’s not a lot of work about combining them.
+
+The work presented by \parencite{smack} is probably the closest approach to the system I present here. The main differences are in the Actor system and the orchestration platform. Instead of using Mesos for Orchestration and Akka for actors, I preferred to use Kubernetes with container microservices instead of actors. The stack described also uses Spark Streaming to deploy a Lambda architecture which could be done in the current infrastructure extending the capabilities of the system. The main reason for avoiding Spark Streaming has been that it’s micro batching focus could involve to lose some tweets during the normalization process. On the other side, the reason to avoid Akka for actors was that it had similar features than Kafka and Microservices in Kubernetes which makes it a component that can be avoiding by using other tools. In that way, I considered that adding Akka would make the system more complex and therefore more difficult to maintain. 
+
+There has also been previous work trying to approach Big Data Analytics to a higher scalability like this paper from 2014 \parencite{scalableHadoop}. This system proposal is agnostic of how to deploy it. Leaving the developer to decide how to deploy it. As container and container orchestrated systems were not popular at the moment, there’s no mention of them. It tries to propose a scalable Big Data Analytics system using the different Hadoop components. As we have seen previously, Spark is preferred nowadays thanks to its increased performance.
+
+In \parencite{lambda2014} we see a similar approach using Hadoop and Pig in the batch layer instead of Cassandra and Spark. They also incorpore a streaming layer for real-time analysis by doing a lambda infrastructure. In \parencite{streamingAnalysis} we can see Zeppelin used as a dashboard interface similarly to our work. However none of this works mention any container orchestrated approach.
