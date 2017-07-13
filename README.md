@@ -1,5 +1,5 @@
 #  Big Data Analytics on Container Orchestrated Systems
-[Gerard Casas Saez](http://gerard.space) undergraduate final thesis.
+[Gerard Casas Saez](http://gerard.space) undergraduate final thesis in Facultat d’Informàtica de Barcelona, Universitat Politècnica de Catalunya. 
 
 ## Generate PDF
 
@@ -13,3 +13,8 @@
 - Each chapters is represented by a file in the [Chapters](Chapters/) folder
 - Appendices are embeded by individual files located in the [Appendices](Appendices/) folder 
 - All figures are attached from [Figures](Figures/) folder
+
+
+----
+
+Written and developed as part of [Project EPIC](https://github.com/Project-EPIC) in Boulder, CO
