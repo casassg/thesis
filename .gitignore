@@ -11,3 +11,7 @@ main-blx.bib
 *.dvi 
 *.lol
 .DS_Store
+
+*.nav 
+*.snm 
+*.upa
