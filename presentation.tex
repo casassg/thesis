@@ -16,7 +16,7 @@
 {
    \begin{centering}
    \smallskip
-   \insertframetitle\smallskip\par
+   \huge\insertframetitle\smallskip\par
    \usebeamercolor[fg]{framesubtitle}\footnotesize\textit{\insertframesubtitle}\par
    \smallskip
    \end{centering}
@@ -52,8 +52,7 @@
 \setbeamerfont{itemize/enumerate subitem}{size=\footnotesize}
 \hypersetup{colorlinks,linkcolor=foreground,urlcolor=foreground}
 
-\let\OLDitemize\itemize
-\renewcommand\itemize{\OLDitemize\addtolength{\itemsep}{15pt}}
+\newenvironment{wideitemize}{\itemize\addtolength{\itemsep}{20pt}}{\enditemize}
 
 
 \usepackage{pdfcomment}
@@ -61,8 +60,8 @@
 \newcommand{\bi}{\begin{itemize}}
 \newcommand{\ei}{\end{itemize}}
 \newcommand{\ig}{\includegraphics}
-\newcommand{\hugeframe}[2]{
-\begin{frame}[plain,c]
+\newcommand{\hugeframedouble}[2]{
+\begin{frame}[c]
   \begin{center}
     \huge\textcolor{title}{#1}
     \vfill
@@ -71,10 +70,28 @@
 
   \end{center}
 
-\end{frame}}
+\end{frame}
+}
+
+\newcommand{\hugeframe}[1]{
+\begin{frame}[c]
+  \begin{center}
+    \huge\textcolor{title}{#1}
+  \end{center}
+
+\end{frame}
+}
+
+\newcommand{\imageframe}[1]{
+  {
+  \usebackgroundtemplate{\vbox to \paperheight{\vfil\hbox to \paperwidth{\includegraphics[width=\paperwidth]{#1}}\vfil}}
+    \begin{frame}[c]
+    \end{frame}
+  }
+}
 
 % Fonts
-\setbeamerfont{title}{size=\LARGE}
+\setbeamerfont{title}{size=\huge}
 
 
 % \setbeamerfont{author}{series=\bfseries,parent=structure}
@@ -85,7 +102,7 @@
 \usepackage[english]{babel}
 \usepackage[utf8x]{inputenc}
 
-\title{Big Data Analytics on Container-Orchestrated Systems}
+\title{Big Data Analytics on \alert{Container-Orchestrated Systems}}
 \author{Gerard Casas Saez}
 \institute{University of Colorado Boulder}
 \date{July 20th}
@@ -97,39 +114,46 @@
   \titlepage
 \end{frame}
 
+
+
 \begin{frame}{Outline}
   \tableofcontents
 \end{frame}
 
 \section{Introduction}
 
+\hugeframe{Why?}
+\hugeframe{Keeping up with data growth}
 
-\begin{frame}{Introduction}
 
-\begin{itemize}
-  \item Exponential increase in data generation
+\begin{frame}{Problem}
+
+\begin{wideitemize}
+  \item IOT \& Social networks
+  \item Internet traffic
   \begin{itemize}
     \item Current: 72 petabytes/month
     \item Prediction 2021: 232 petabytes/month. 
   \end{itemize}
-  \item Need to scale Big Data Analytics System
-  \item Keeping mantainance at low cost
-  \pdfnote{322\% of increase ratio}
-  \item Migrate Project EPIC architecture to new technologies
-\end{itemize}
+\pdfnote{322\% of increase ratio}
+  
+\end{wideitemize}
 
 \end{frame}
 
-% \begin{frame}{Introduction}{New technologies}
 
-% \begin{itemize}
-%   \item Microservice architectures
-%   \item Container 
-%   \item Container-orchestration 
-%   \item Migrate existing Project EPIC current architecture to container-orchestrated system
-% \end{itemize}
 
-% \end{frame}
+
+\begin{frame}{Another problem}
+
+\begin{wideitemize}
+  \item Need to scale Big Data Analytics System
+  \item Keeping mantainance at low cost
+  \item Container-orchestrated make infrastructure easier
+  \item Migrate Project EPIC architecture to container-orchestration system
+\end{wideitemize}
+
+\end{frame}
 
 
 \section{Background}
@@ -138,74 +162,75 @@
 
 \begin{frame}{Project EPIC}
 
-  \begin{itemize}
-    \item EPIC Collect
-    \item EPIC Analyze
-    \item EPIC Analytics (additional machine)
-  \end{itemize}
-\end{frame}
-\begin{frame}{Project EPIC}
+\begin{wideitemize}
+  \item EPIC Collect
+  \item EPIC Analyze
+\end{wideitemize}
 
-\includegraphics[width=\textwidth]{Figures/old_arch}
+\end{frame}
+
+
+\imageframe{Figures/old_arch}
+
+\begin{frame}{Containerization}
+
+\begin{wideitemize}
+  \item Operating-system-level virtualization
+  \item Use host machine system resources 
+  \item \textbf{Docker} most used alternative
+  \item Development microservices
+\end{wideitemize}
+
+\end{frame}
+
+
+\begin{frame}{Container-orchestration systems}
+
+\begin{wideitemize}
+  \item Container interaction abstraction
+  \pdfnote{Network configuration, interaction between containers, system updates\ldots}
+  \item Great to deploy microservices architectures
+  \item Apache Mesos vs \textbf{Kubernetes}
+  \pdfnote{Kubernetes is mantained by cloud native computing foundation aka Linux Foundation}
+  \pdfnote{Not related to Orchestrated microservices}
+\end{wideitemize}
 
 \end{frame}
 
 \begin{frame}{Microservices Architecture}
 
-  \begin{itemize}
+  \begin{wideitemize}
     \item Small \& specific
-    \item Highly iteractive
+    \item Better scalability
     \item Loosely-coupled \& highly-cohesive
-    \item Independent development and scalability
-  \end{itemize}
+    \item Orchestration <> \textbf{Coreography}
+  \end{wideitemize}
 
 \end{frame}
 
 
-\begin{frame}[plain,c]{Microservices Architecture}
-  \begin{center}
-    \LARGE Coreography vs Orchestration
-  \end{center}
+\begin{frame}{Coreography microservice architecture}
+
+  \begin{wideitemize}
+    \item Easier to extend
+    \item PubSub interaction
+    \pdfnote{Publish subscription interaction}
+    \item Messaging system: \textbf{Apache Kafka}
+    \item Asyncronous
+  \end{wideitemize}
 
 \end{frame}
-
-
-\begin{frame}{Containerization}
-
-\begin{itemize}
-  \item Operating-system-level virtualization
-  \item Use host machine system resources 
-  \item Development microservices
-  \item \textbf{Docker} most used alternative
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{Container-orchestration systems}
-
-\begin{itemize}
-  \item Container interaction abstraction
-  \pdfnote{Network configuration, interaction between containers, system updates\ldots}
-  \item More mutable architectures
-  \pdfnote{Allows for new possibilities for architectures}
-  \item Microservices deployment
-  \item Apache Mesos vs \textbf{Kubernetes}
-  \item \textbf{Google Cloud}: managed Kubernetes cluster
-  \pdfnote{Kubernetes is mantained by cloud native computing foundation aka Linux Foundation}
-  \pdfnote{Not related to Orchestrated microservices}
-\end{itemize}
-
-\end{frame}
-
-
 
 
 \section{Problem statement}
+
+\hugeframe{Problem statement}
+
 \begin{frame}{Problem statement}
 
 
 \begin{enumerate}
-  \item Advantages and/or limitations from the new Project EPIC infrastructure
+  \item Advantages and/or limitations from existing infrastructure
   \begin{enumerate}
     \item More reliable?
     \item More scalable?
@@ -221,52 +246,44 @@
 \end{frame}
 
 \section{Approach}
-\hugeframe{Approach}{}
+\hugeframe{Approach}
 
 \begin{frame}{Features}
 
-\begin{itemize}
+\begin{wideitemize}
   \item Event management
   \item Real-time collection of streaming Twitter data
   \item Real-time classification of incoming tweets
   \item Data Analysis
-\end{itemize}
+\end{wideitemize}
 
 \end{frame}
 
-\begin{frame}{Custom components}
+\begin{frame}{Non-functional requirements}
 
-\begin{itemize}
-  \item \textbf{Event Manager:} CRUD UI for events
-
-  \item \textbf{Infrastructure Controller:} Changes infrastructure on demmand
-
-  \item \textbf{Twitter Tracker:} Twitter streaming client
-
-  \item \textbf{Twitter Normalizer:} JSON to cassandra row
-\end{itemize}
+\begin{wideitemize}
+  \item Less code
+  \item Easier deployment
+  \item More flexible 
+  \item Better scalability
+\end{wideitemize}
 
 \end{frame}
 
-\begin{frame}{Architecture}
+\imageframe{Figures/SysArch2}
 
-\begin{figure}
-\colorbox{white}{\includegraphics[width=\textwidth]{Figures/SysArch}}
-\end{figure}
-
-\end{frame}
 
 \section{Implementation}
-\hugeframe{Implementation}{}
+\hugeframe{Demo time!}
 
 
-\hugeframe{Let's track an event...}{\href{http://epic.gerard.space}{Event Manager UI}}
-\hugeframe{...and analyze it!}{\href{http://epic.gerard.space/zeppelin/}{Zeppelin Notebook}}
+\hugeframedouble{Let's track an event...}{\href{http://epic.gerard.space}{Event Manager UI}}
+\hugeframedouble{...and analyze it!}{\href{http://epic.gerard.space/zeppelin/}{Zeppelin Notebook}}
 
 
 
 \section{Questions?}
-\hugeframe{Questions?}{}
+\hugeframe{Questions?}
 
 
 % Commands to include a figure:
