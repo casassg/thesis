@@ -56,6 +56,7 @@
 
 
 \usepackage{pdfcomment}
+
 \newcommand{\pdfnote}[1]{\marginnote{\pdfcomment[icon=note]{#1}}}
 \newcommand{\bi}{\begin{itemize}}
 \newcommand{\ei}{\end{itemize}}
@@ -84,8 +85,22 @@
 
 \newcommand{\imageframe}[1]{
   {
-  \usebackgroundtemplate{\vbox to \paperheight{\vfil\hbox to \paperwidth{\includegraphics[width=\paperwidth]{#1}}\vfil}}
+
+  \setbeamertemplate{background}{\vbox to \paperheight{\vfil\hbox to \paperwidth{\ig[width=\paperwidth]{#1}}\vfil}}
+
     \begin{frame}[c]
+
+    \end{frame}
+  }
+}
+\newcommand{\imageframecolor}[2]{
+  {
+  \setbeamercolor{normal text}{bg=#2}
+
+  \setbeamertemplate{background}{\vbox to \paperheight{\vfil\hbox to \paperwidth{\ig[width=\paperwidth]{#1}}\vfil}}
+
+    \begin{frame}[c]
+
     \end{frame}
   }
 }
@@ -105,12 +120,11 @@
 \title{Big Data Analytics on Container-Orchestrated Systems}
 \author{Gerard Casas Saez}
 \institute{University of Colorado Boulder}
-\date{July 20th}
+\date{July 20, 2017}
 
 \begin{document}
 
 \begin{frame}
-  \pdfnote{Thank  Steve Voida, Rick Han, and Tom Yeh for comming and Ken Anderson my advisor}
   \titlepage
 \end{frame}
 
@@ -120,7 +134,7 @@
   \tableofcontents
 \end{frame}
 
-\section{Introduction}
+\section{Why?}
 
 \hugeframe{Why?}
 \hugeframe{Keeping up with data growth}
@@ -135,10 +149,10 @@
     \item Current: 72 petabytes/month
     \item Prediction 2021: 232 petabytes/month. 
   \end{itemize}
-\pdfnote{322\% of increase ratio}
   
 \end{wideitemize}
 
+\pdfnote{322\% of increase ratio}
 \end{frame}
 
 
@@ -270,21 +284,148 @@
 
 \end{frame}
 
-\imageframe{Figures/SysArch2}
+\imageframecolor{Figures/SysArch2}{white}
 
 
-\section{Implementation}
+\section{Demo}
 \hugeframe{Demo time!}
 
 
 \hugeframedouble{Let's track an event...}{\href{http://epic.gerard.space}{Event Manager UI}}
 \hugeframedouble{...and analyze it!}{\href{http://epic.gerard.space/zeppelin/}{Zeppelin Notebook}}
 
+\section{Evaluation \& Results}
+\hugeframe{Evaluation \& Results}
+\hugeframe{Reliability}
+
+\begin{frame}{Current vs Prototype}
+  \begin{columns}[T] % align columns
+    \begin{column}{.48\textwidth}
+      \begin{wideitemize}
+        \item EPIC Collect: multi threaded, auto-monitoring
+        \item EPIC Analyze: tight dependency to external resources, manual deployment, no  recovery procedure
+      \end{wideitemize}
+    
+    \end{column}%
+    \hfill%
+    \begin{column}{.48\textwidth}
+      \begin{wideitemize}
+        \item Kubernetes abstraction
+        \item Controller manager: Auto-recovery, replica deployment, rolling update
+        \item Scheduler: check memory and cpu and assign intance deployment
+      \end{wideitemize}
+    
+    \end{column}%
+  \end{columns}
+\end{frame}
+
+% Only use if needed
+\imageframe{Figures/pods}
+
+\hugeframe{Scalability}
+
+\begin{frame}{Current vs Prototype}
+  \begin{columns}[T] % align columns
+    \begin{column}{.48\textwidth}
+      \begin{wideitemize}
+        \item EPIC Collect: manual, huge load, monolith replication
+        \item EPIC Analyze: monolith, load balancing, shared session state
+        \item Not easy and manual
+      \end{wideitemize}
+    
+    \end{column}%
+    \hfill%
+    \begin{column}{.48\textwidth}
+      \begin{wideitemize}
+        \item Replica specification
+        \item Independently scalable 
+        \item Stateless microservices
+        \item Auto scale
+        \item Abstracted management interface
+      \end{wideitemize}
+    
+    \end{column}%
+  \end{columns}
+\end{frame}
+
+\hugeframe{Performance}
+\hugeframe{WordCount execution}
+
+\imageframe{Figures/wordcountplot}
+
+\hugeframe{Development and mantenance}
 
 
-\section{Questions?}
+
+
+\begin{frame}{Current vs Prototype}
+  \begin{columns}[T] % align columns
+    \begin{column}{.48\textwidth}
+      \begin{wideitemize}
+        \item Large and complex
+        \pdfnote{EPIC Analyze has 5086 lines of code}
+        \item Strong use of frameworks
+      \end{wideitemize}
+    
+    \end{column}%
+    \hfill%
+    \begin{column}{.48\textwidth}
+      \begin{wideitemize}
+        \item Simple and small code (mostly)
+        \pdfnote{Tracker - 108, Controller - 145, manager - 2090, normalizer - 209}
+        \item Independent microservices
+        \item Technology flexibility
+        \pdfnote{Thanks to docker + kafka}
+        \item YAML deployment description files
+        \pdfnote{can be redeployed over and over}
+      \end{wideitemize}
+    
+    \end{column}%
+  \end{columns}
+\end{frame}
+
+
+\begin{frame}{Results}
+\begin{wideitemize}
+  \item High scalability with microservices
+  \item Scale components individually
+  \item Abstraction over system management vs manual
+  \item Monitoring built-in
+
+  \end{wideitemize}
+\end{frame}
+
+\begin{frame}{Results}
+\begin{wideitemize}
+  \item Easier to mantain: less code, faster development
+  \pdfnote{Reconstruct the core aspects of these systems in one semester of effort}
+  \item Ease of configuration and deployment 
+  \item Flexibility on cloud provider deployment
+  \item Resource usage optimizer 
+  \item Other features: Rolling-update, auto-scale\ldots
+\end{wideitemize}
+\end{frame}
+
+
+\section{Related work}
+\hugeframe{Related work}
+
+\section{Future work}
+\hugeframe{Future work}
+
 \hugeframe{Questions?}
 
+
+\hugeframedouble{Thank you!}{
+\begin{description}
+  \addtolength{\itemsep}{5pt}
+  \item[\textbf{Twitter}]  \href{http://twitter.com/casassaez}{@casassaez}
+  \item[\textbf{Website}]  \href{http://gerard.space}{gerard.space}
+  \item[\textbf{Repo}] \href{http://github.com/casassg/thesis}{github.com/casassg/thesis}
+
+\end{description} 
+
+}
 
 % Commands to include a figure:
 %\begin{figure}
