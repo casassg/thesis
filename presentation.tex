@@ -12,6 +12,27 @@
 \setmainfont{Helvetica Neue}
 \setbeamerfont{note page}{family*=pplx,size=\footnotesize} % Palatino for notes
 
+\usepackage{listings}
+\lstset{
+  frame=top|bottom,
+  basicstyle=\tiny,    % the size of the fonts that are used for the code
+  tabsize=2,                              % tab size in blank spaces
+  extendedchars=true,                     %
+  breaklines=true,                        % sets automatic line breaking
+  captionpos=b,                           % sets the caption-position to top
+  mathescape=true,
+  showspaces=false,           % Leerzeichen anzeigen ?
+  showtabs=false,             % Tabs anzeigen ?
+  xleftmargin=17pt,
+  belowcaptionskip=1em,
+  aboveskip=2em,
+  framexleftmargin=17pt,
+  framexrightmargin=17pt,
+  framexbottommargin=5pt,
+  framextopmargin=5pt,
+  showstringspaces=false      % Leerzeichen in Strings anzeigen ?
+ }
+
 \setbeamertemplate{frametitle}
 {
    \begin{centering}
@@ -134,47 +155,34 @@
   \tableofcontents
 \end{frame}
 
-\section{Why?}
+\section{Introduction}
 
+\hugeframe{Introduction}
 \hugeframe{Why?}
-\hugeframe{Keeping up with data growth}
 
 
-\begin{frame}{Problem}
+
+\begin{frame}{Introduction}
 
 \begin{wideitemize}
   \item IOT \& Social networks
-  \item Internet traffic
-  \begin{itemize}
-    \item Current: 72 petabytes/month
-    \item Prediction 2021: 232 petabytes/month. 
-  \end{itemize}
+  \item Increase internet traffic: 3x internet traffic by 2021
+  \item Scale up Big Data Analytics System
+  \item Keeping maintenance at low cost
+  \item Container-orchestrated make infrastructure easier
+
   
 \end{wideitemize}
 
-\pdfnote{322\% of increase ratio}
+\pdfnote{322\% of increase ratio
+Current: 72 petabytes/month
+Prediction 2021: 232 petabytes/month. }
+\pdfnote{Migrate Project EPIC architecture to container-orchestration system}
 \end{frame}
 
+\hugeframe{Keep up with data growth}
 
-
-
-\begin{frame}{Another problem}
-
-\begin{wideitemize}
-  \item Need to scale Big Data Analytics System
-  \item Keeping mantainance at low cost
-  \item Container-orchestrated make infrastructure easier
-  \item Migrate Project EPIC architecture to container-orchestration system
-\end{wideitemize}
-
-\end{frame}
-
-
-\section{Background}
-
-\hugeframe{Background}
-
-\begin{frame}{Project EPIC}
+\begin{frame}{Background: Project EPIC}
 
 \begin{wideitemize}
   \item EPIC Collect
@@ -186,7 +194,7 @@
 
 \imageframe{Figures/old_arch}
 
-\begin{frame}{Containerization}
+\begin{frame}{Background: Containerization}
 
 \begin{wideitemize}
   \item Operating-system-level virtualization
@@ -198,7 +206,7 @@
 \end{frame}
 
 
-\begin{frame}{Container-orchestration systems}
+\begin{frame}{Background: Container-orchestration systems}
 
 \begin{wideitemize}
   \item Container interaction abstraction
@@ -211,7 +219,7 @@
 
 \end{frame}
 
-\begin{frame}{Microservices Architecture}
+\begin{frame}{Background: Microservices Architecture}
 
   \begin{wideitemize}
     \item Small \& specific
@@ -223,14 +231,14 @@
 \end{frame}
 
 
-\begin{frame}{Coreography microservice architecture}
+\begin{frame}{Background: Coreography microservice architecture}
 
   \begin{wideitemize}
     \item Easier to extend
+    \item Asyncronous
     \item PubSub interaction
     \pdfnote{Publish subscription interaction}
     \item Messaging system: \textbf{Apache Kafka}
-    \item Asyncronous
   \end{wideitemize}
 
 \end{frame}
@@ -259,6 +267,16 @@
 
 \end{frame}
 
+\section{Related work}
+
+\begin{frame}{Related work}
+\begin{wideitemize}
+  \item SMACK: Spark, Mesos, Akka, Cassandra and Kafka [Raul Estrada et al. 2016]
+  \item Hadoop ecosystem [Han Hu et al. 2014]
+  \item Lambda architecture [Zirije Hasani et al. 2014]
+\end{wideitemize}
+\end{frame}
+
 \section{Approach}
 \hugeframe{Approach}
 
@@ -284,15 +302,50 @@
 
 \end{frame}
 
+\begin{frame}{Custom components}
+
+\begin{wideitemize}
+  \item Event Manager
+  \item Infrastructure Controller
+  \item Twitter tracker
+  \item Twitter Normalizer
+\end{wideitemize}
+
+\end{frame}
+
+\begin{frame}[fragile]{Cassandra table structure}
+
+\begin{lstlisting}[language=SQL, caption={Tweets CQL table script}]
+CREATE TABLE twitter_analytics.tweet (
+    id uuid, t_id text, event_kw text, event_name text, hashtags list<text>,
+    media_url text, t_coordinates text, t_created_at timestamp, 
+    t_favorite_count int, t_favorited boolean, t_geo text, 
+    t_is_a_retweet boolean, t_lang text, t_retweet_count int, 
+    t_retweeted boolean, t_text text, u_created_at timestamp, 
+    u_description text, u_favourites_count int, u_followers_count int,
+    u_friends_count int, u_geo_enabled boolean, u_id text, u_lang text,
+    u_listed_count int, u_location text, u_name text, u_screen_name text, 
+    u_statuses_count int, u_time_zone text, u_url text, u_utc_offset int,
+    um_id text, um_name text, um_screen_name text, urls list<text>,
+    PRIMARY KEY (id, t_id))
+\end{lstlisting}
+
+\end{frame} 
+
 \imageframecolor{Figures/SysArch2}{white}
+\imageframe{Figures/eventmanager}
+\imageframe{Figures/pods}
+\imageframe{Figures/zeppelin}
 
 
 \section{Demo}
 \hugeframe{Demo time!}
 
 
-\hugeframedouble{Let's track an event...}{\href{http://epic.gerard.space}{Event Manager UI}}
-\hugeframedouble{...and analyze it!}{\href{http://epic.gerard.space/zeppelin/}{Zeppelin Notebook}}
+\hugeframedouble{Let's track an event...}{Event Manager UI}
+\hugeframedouble{...and analyze it!}{Zeppelin Notebook}
+
+
 
 \section{Evaluation \& Results}
 \hugeframe{Evaluation \& Results}
@@ -302,8 +355,9 @@
   \begin{columns}[T] % align columns
     \begin{column}{.48\textwidth}
       \begin{wideitemize}
-        \item EPIC Collect: multi threaded, auto-monitoring
-        \item EPIC Analyze: tight dependency to external resources, manual deployment, no  recovery procedure
+        \item Threads to monitoring
+        \item Every minute script check
+        \item Check log file size
       \end{wideitemize}
     
     \end{column}%
@@ -311,8 +365,9 @@
     \begin{column}{.48\textwidth}
       \begin{wideitemize}
         \item Kubernetes abstraction
-        \item Controller manager: Auto-recovery, replica deployment, rolling update
-        \item Scheduler: check memory and cpu and assign intance deployment
+        \item Auto recovery
+        \item Rolling update
+        \item Node assignation depending on resources usage
       \end{wideitemize}
     
     \end{column}%
@@ -320,115 +375,147 @@
 \end{frame}
 
 % Only use if needed
-\imageframe{Figures/pods}
 
+
+\subsection{Scalability}
 \hugeframe{Scalability}
 
 \begin{frame}{Current vs Prototype}
   \begin{columns}[T] % align columns
     \begin{column}{.48\textwidth}
       \begin{wideitemize}
-        \item EPIC Collect: manual, huge load, monolith replication
-        \item EPIC Analyze: monolith, load balancing, shared session state
-        \item Not easy and manual
+        \item Monolyth
+        \item Manual process
+        \item Shared session state
+        \item Load balancing
       \end{wideitemize}
     
     \end{column}%
     \hfill%
     \begin{column}{.48\textwidth}
       \begin{wideitemize}
-        \item Replica specification
-        \item Independently scalable 
+        \item Kubernets replica specification
         \item Stateless microservices
+        \item Independently scalable
+        \item Abstracted infrastructure 
         \item Auto scale
-        \item Abstracted management interface
       \end{wideitemize}
     
     \end{column}%
   \end{columns}
 \end{frame}
 
-\hugeframe{Performance}
-\hugeframe{WordCount execution}
-
-\imageframe{Figures/wordcountplot}
-
-\hugeframe{Development and mantenance}
+\subsection{Maintenance}
+\hugeframe{Maintenance}
 
 
 
 
-\begin{frame}{Current vs Prototype}
-  \begin{columns}[T] % align columns
-    \begin{column}{.48\textwidth}
-      \begin{wideitemize}
-        \item Large and complex
-        \pdfnote{EPIC Analyze has 5086 lines of code}
-        \item Strong use of frameworks
-      \end{wideitemize}
-    
-    \end{column}%
-    \hfill%
-    \begin{column}{.48\textwidth}
-      \begin{wideitemize}
-        \item Simple and small code (mostly)
-        \pdfnote{Tracker - 108, Controller - 145, manager - 2090, normalizer - 209}
-        \item Independent microservices
-        \item Technology flexibility
-        \pdfnote{Thanks to docker + kafka}
-        \item YAML deployment description files
-        \pdfnote{can be redeployed over and over}
-      \end{wideitemize}
-    
-    \end{column}%
-  \end{columns}
-\end{frame}
-
-
-\begin{frame}{Results}
-\begin{wideitemize}
-  \item High scalability with microservices
-  \item Scale components individually
-  \item Abstraction over system management vs manual
-  \item Monitoring built-in
-
+\begin{frame}{Current infrastructure}
+ \begin{wideitemize}
+    \item Large \& complex
+    \pdfnote{EPIC Analyze has 5086 lines of code}
+    \item Strong use of frameworks
+    \item Manual deployment
+    \item Dedicated machines
   \end{wideitemize}
 \end{frame}
 
-\begin{frame}{Results}
-\begin{wideitemize}
-  \item Easier to mantain: less code, faster development
-  \pdfnote{Reconstruct the core aspects of these systems in one semester of effort}
-  \item Ease of configuration and deployment 
-  \item Flexibility on cloud provider deployment
-  \item Resource usage optimizer 
-  \item Other features: Rolling-update, auto-scale\ldots
-\end{wideitemize}
+\begin{frame}{Prototype}
+ \begin{wideitemize}
+      \item Easier to mantain: less code, faster development
+        \pdfnote{Tracker - 108, Controller - 145, manager - 2090, normalizer - 209}
+          \pdfnote{Reconstruct the core aspects of these systems in one semester of effort}
+        \item Technology flexibility
+        \pdfnote{Thanks to docker + kafka}
+        \item Easier to deploy: YAML description files
+        \item Flexibility on cloud provider 
+        \item Available built-in tools
+  \end{wideitemize}
 \end{frame}
 
 
-\section{Related work}
-\hugeframe{Related work}
 
-\begin{frame}{Related work}
-\begin{wideitemize}
-  \item SMACK: Spark, Mesos, Akka, Cassandra and Kafka [Raul Estrada et al. 2016]
-  \item Hadoop ecosystem [Han Hu et al. 2014]
-  \item Lambda architecture [Zirije Hasani et al. 2014]
-\end{wideitemize}
+\begin{frame}{Prototype}
+  \begin{center}    
+    \begin{description}
+      \addtolength{\itemsep}{20pt}
+      \item[\textbf{Twitter tracker}]  108 lines
+      \item[\textbf{Kubernetes controller}]  145 lines
+      \item[\textbf{Event manager}]  2090 lines
+      \item[\textbf{Tweet normalizer}]  209 lines
+    \end{description}
+  \end{center}
+
 \end{frame}
+
+\subsection{Performance}
+\hugeframe{Performance}
+
+\begin{frame}[fragile]{WordCount}
+\begin{lstlisting}[language=scala,caption={WordCount Spark script}]
+val table = sc.cassandraTable("twitter_analytics", "tweet")
+val words = table.select("t_text").flatMap(l => l.getString("t_text").split(" "))
+      .map(word => (word.toLowerCase,1)).reduceByKey(_ + _).map(_.swap).sortByKey(false,1)
+\end{lstlisting}
+
+\begin{lstlisting}[language=scala,caption={Debug string rdd}]
+(1) ShuffledRDD[112] at sortByKey at <console>:31 []
++-(176) MapPartitionsRDD[111] at map at <console>:31 []
+    |   ShuffledRDD[110] at reduceByKey at <console>:31 []
+    +-(176) MapPartitionsRDD[109] at map at <console>:31 []
+        |   MapPartitionsRDD[108] at flatMap at <console>:31 []
+        |   CassandraTableScanRDD[107] at RDD at CassandraRDD.scala:15 []
+\end{lstlisting}
+
+\end{frame}
+
+
+\begin{frame}{WordCount}
+    \begin{center}
+      \includegraphics[width=.5\textwidth]{Figures/wordcountplot}
+      \pdfnote{27M in 25 min}
+       \begin{table}
+      \centering
+        \begin{tabular}{r r r}
+        \hline
+        \textbf{Number of tweets} & \textbf{Time (s)} & \textbf{Tweets/sec}\\
+        \hline
+        490199 & 238 & 2060 \\
+        \hline
+        1400884 & 469 & 2987 \\
+        \hline
+        21680851 & 1107 & 19585 \\
+        \hline
+        27199614 & 1500 & 18133 \\
+        \hline
+        54395957 & 4228 & 12866 \\
+        \hline
+        \end{tabular}
+      \end{table}
+
+    \end{center}
+\end{frame}
+
+
+
+
+
+
 
 \section{Future work}
-\hugeframe{Future work}
-
 \begin{frame}{Future work}
 \begin{wideitemize}
   \item Improve resource specification (CPU, memory)
-  \item Unified authentification
   \item Better Cassandra structure
-  \item Extend the system to fit current
+  \item Unified authentification
+  \item Extend the system with new features
 \end{wideitemize}
 \end{frame}
+
+
+
+
 
 \hugeframe{Questions?}
 
