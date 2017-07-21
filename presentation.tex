@@ -291,17 +291,6 @@ Prediction 2021: 232 petabytes/month. }
 
 \end{frame}
 
-\begin{frame}{Non-functional requirements}
-
-\begin{wideitemize}
-  \item Less code
-  \item Easier deployment
-  \item More flexible 
-  \item Better scalability
-\end{wideitemize}
-
-\end{frame}
-
 \begin{frame}{Custom components}
 
 \begin{wideitemize}
@@ -333,9 +322,7 @@ CREATE TABLE twitter_analytics.tweet (
 \end{frame} 
 
 \imageframecolor{Figures/SysArch2}{white}
-\imageframe{Figures/eventmanager}
-\imageframe{Figures/pods}
-\imageframe{Figures/zeppelin}
+
 
 
 \section{Demo}
@@ -344,6 +331,10 @@ CREATE TABLE twitter_analytics.tweet (
 
 \hugeframedouble{Let's track an event...}{Event Manager UI}
 \hugeframedouble{...and analyze it!}{Zeppelin Notebook}
+
+\imageframe{Figures/eventmanager}
+\imageframe{Figures/pods}
+\imageframe{Figures/zeppelin}
 
 
 
@@ -358,6 +349,7 @@ CREATE TABLE twitter_analytics.tweet (
         \item Threads to monitoring
         \item Every minute script check
         \item Check log file size
+        \item Analyze manual
       \end{wideitemize}
     
     \end{column}%
@@ -394,10 +386,9 @@ CREATE TABLE twitter_analytics.tweet (
     \hfill%
     \begin{column}{.48\textwidth}
       \begin{wideitemize}
-        \item Kubernets replica specification
+        \item Kubernetes replica specification
         \item Stateless microservices
         \item Independently scalable
-        \item Abstracted infrastructure 
         \item Auto scale
       \end{wideitemize}
     
@@ -436,10 +427,11 @@ CREATE TABLE twitter_analytics.tweet (
 
 
 
-\begin{frame}{Prototype}
+\begin{frame}{Code lines}
   \begin{center}    
     \begin{description}
       \addtolength{\itemsep}{20pt}
+      \item[\textbf{EPIC Analyze}]  5086 lines
       \item[\textbf{Twitter tracker}]  108 lines
       \item[\textbf{Kubernetes controller}]  145 lines
       \item[\textbf{Event manager}]  2090 lines
